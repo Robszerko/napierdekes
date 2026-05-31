@@ -1,67 +1,294 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Időjárás Érdekesség Beküldő</title>
+    <title>Időjárás Érdekesség Vezérlőpult</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; justify-content: center; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 500px; width: 100%; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        label { font-weight: bold; margin-top: 15px; display: block; color: #555; }
-        input[type="date"], textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
-        textarea { resize: vertical; min-height: 150px; }
-        button { margin-top: 20px; width: 100%; padding: 12px; background-color: #0088cc; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background-color: #006699; }
-        .status { margin-top: 15px; text-align: center; font-weight: bold; }
-        .success { color: green; }
-        .error { color: red; }
+        :root {
+            --primary: #0088cc;
+            --primary-hover: #006699;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #333333;
+            --border: #e0e0e0;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text);
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            align-items: flex-start;
+        }
+
+        /* ŰRLAP PANEL */
+        .form-panel {
+            flex: 1 1 350px;
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            position: sticky;
+            top: 20px;
+        }
+
+        .form-panel h3 { margin-top: 0; color: var(--primary); }
+        
+        label { font-weight: bold; margin-top: 15px; display: block; color: #555; font-size: 14px; }
+        
+        input[type="date"], textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 1px solid var(--border); 
+            border-radius: 6px; 
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: 15px;
+        }
+        
+        textarea { resize: vertical; min-height: 180px; }
+        
+        button { 
+            margin-top: 20px; 
+            width: 100%; 
+            padding: 12px; 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+        
+        button:hover { background-color: var(--primary-hover); }
+        
+        .status { margin-top: 15px; text-align: center; font-weight: bold; font-size: 14px; min-height: 20px;}
+        .success { color: #2e7d32; }
+        .error { color: #d32f2f; }
+
+        /* LISTA PANEL */
+        .list-panel {
+            flex: 2 1 500px;
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+
+        .list-panel h3 { margin-top: 0; color: var(--text); border-bottom: 2px solid var(--border); padding-bottom: 10px;}
+
+        .entry-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #fafafa;
+            transition: 0.2s;
+        }
+
+        .entry-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0,136,204,0.1);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed var(--border);
+            padding-bottom: 10px;
+        }
+
+        .entry-date { font-weight: bold; font-size: 16px; color: var(--primary); }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge.sent { background-color: #2e7d32; }
+        .badge.pending { background-color: #f57c00; }
+
+        .entry-text {
+            font-size: 14px;
+            color: #444;
+            white-space: pre-wrap; /* Hogy a sortörések megmaradjanak */
+            margin-bottom: 15px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btns button {
+            margin: 0;
+            width: auto;
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn-edit { background-color: #ff9800; color: white; }
+        .btn-edit:hover { background-color: #f57c00; }
+        
+        .btn-delete { background-color: #f44336; color: white; }
+        .btn-delete:hover { background-color: #d32f2f; }
+        
+        .loading { text-align: center; color: #777; font-style: italic; }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>💡 Napi Érdekesség Beküldése</h2>
+<div class="header">
+    <h2>🌤️ Napi Érdekesség Vezérlőpult</h2>
+    <p>Kezeld, szerkeszd és időzítsd a meteorológiai érdekességeket!</p>
+</div>
+
+<div class="dashboard-container">
     
-    <label for="datum">Melyik napra szóljon?</label>
-    <input type="date" id="datum" required>
+    <!-- ŰRLAP PANEL -->
+    <div class="form-panel">
+        <h3 id="formTitle">✏️ Új bejegyzés / Szerkesztés</h3>
+        
+        <label for="datum">Dátum (Melyik napra szóljon?)</label>
+        <input type="date" id="datum" required>
 
-    <label for="szoveg">Az érdekesség szövege (akár HTML formázással is, pl. &lt;b&gt;félkövér&lt;/b&gt;):</label>
-    <textarea id="szoveg" placeholder="Tudtad, hogy a legmagasabb hőmérsékletet..." required></textarea>
+        <label for="szoveg">Az érdekesség szövege (HTML támogatott):</label>
+        <textarea id="szoveg" placeholder="Tudtad, hogy a legmagasabb hőmérsékletet..." required></textarea>
 
-    <button onclick="elkuldAdat()">Beküldés az adatbázisba</button>
+        <!-- Rejtett mező, hogy tudjuk, frissítünk-e egy már kiküldöttet -->
+        <input type="hidden" id="isSent" value="false">
 
-    <div id="statusMsg" class="status"></div>
+        <button onclick="mentesAdatbazisba()" id="saveBtn">💾 Mentés az adatbázisba</button>
+        <button onclick="urlapUrites()" style="background-color: #9e9e9e; display: none;" id="cancelBtn">❌ Szerkesztés megszakítása</button>
+
+        <div id="statusMsg" class="status"></div>
+    </div>
+
+    <!-- LISTA PANEL -->
+    <div class="list-panel">
+        <h3>📋 Betervezett és korábbi érdekességek</h3>
+        <div id="entriesList">
+            <div class="loading">⏳ Adatok betöltése a Firebase-ből...</div>
+        </div>
+    </div>
+
 </div>
 
 <script>
-    // IDE ÍRD A FIREBASE LINKEDET! (A perjel a végén nagyon fontos!)
+    // === A TE FIREBASE LINKED (Cseréld le a tiedre, ha más!) ===
     const FIREBASE_URL = "https://probaidojaras-default-rtdb.europe-west1.firebasedatabase.app/";
 
-    // Automatikusan a mai nap beállítása a dátumválasztóban
-    document.getElementById('datum').valueAsDate = new Date();
+    // Oldal betöltésekor listázzuk az adatokat
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById('datum').valueAsDate = new Date();
+        adatokLekerdezese();
+    });
 
-    async function elkuldAdat() {
+    // 1. ADATOK LEKÉRDEZÉSE ÉS LISTÁZÁSA
+    async function adatokLekerdezese() {
+        const listContainer = document.getElementById('entriesList');
+        
+        try {
+            const response = await fetch(`${FIREBASE_URL}erdekessegek.json`);
+            const data = await response.json();
+            
+            listContainer.innerHTML = ""; // Betöltés szöveg eltüntetése
+
+            if (!data) {
+                listContainer.innerHTML = "<p style='text-align:center; color:#777;'>Még nincs egyetlen bejegyzés sem.</p>";
+                return;
+            }
+
+            // Objektumból tömböt csinálunk, hogy dátum szerint rendezhessük
+            const bejegyzesek = Object.keys(data).map(datumKulcs => {
+                return {
+                    datum: datumKulcs,
+                    szoveg: data[datumKulcs].text,
+                    elkulve: data[datumKulcs].sent
+                };
+            });
+
+            // Rendezés dátum szerint csökkenő sorrendbe (legújabb legfelül)
+            bejegyzesek.sort((a, b) => new Date(b.datum) - new Date(a.datum));
+
+            // Kártyák generálása
+            bejegyzesek.forEach(item => {
+                const isSentHtml = item.elkulve 
+                    ? `<span class="badge sent">✅ Kiküldve</span>` 
+                    : `<span class="badge pending">⏳ Várakozik</span>`;
+
+                // Safe text a gombokhoz (hogy ne törjön el a HTML a szimpla/dupla idézőjelek miatt)
+                const safeText = encodeURIComponent(item.szoveg);
+
+                const cardHtml = `
+                    <div class="entry-card">
+                        <div class="entry-header">
+                            <span class="entry-date">📅 ${item.datum}</span>
+                            ${isSentHtml}
+                        </div>
+                        <div class="entry-text">${item.szoveg}</div>
+                        <div class="action-btns">
+                            <button class="btn-edit" onclick="szerkesztesBetoltes('${item.datum}', '${safeText}', ${item.elkulve})">✏️ Szerkeszt</button>
+                            <button class="btn-delete" onclick="torlesAdatbazisbol('${item.datum}')">🗑️ Töröl</button>
+                        </div>
+                    </div>
+                `;
+                listContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+
+        } catch (error) {
+            listContainer.innerHTML = "<p class='error'>❌ Hiba történt az adatok letöltésekor!</p>";
+        }
+    }
+
+    // 2. ADAT MENTÉSE VAGY FRISSÍTÉSE
+    async function mentesAdatbazisba() {
         const datum = document.getElementById('datum').value;
         const szoveg = document.getElementById('szoveg').value.trim();
+        const isSentStr = document.getElementById('isSent').value;
         const statusMsg = document.getElementById('statusMsg');
 
         if (!datum || !szoveg) {
-            statusMsg.textContent = "Kérlek tölts ki minden mezőt!";
-            statusMsg.className = "status error";
+            mutatStatusz("Kérlek tölts ki minden mezőt!", "error");
             return;
         }
 
-        statusMsg.textContent = "Küldés folyamatban...";
-        statusMsg.className = "status";
+        mutatStatusz("Mentés folyamatban...", "");
 
-        // JSON adat összeállítása
+        // Ha szerkesztettél egyet, ami még Várakozik (false), maradjon false. 
+        // Ha újra akarsz küldeni egy korábbit, a mentés pillanatában újra false-ra állítjuk!
         const adat = {
             text: szoveg,
-            sent: false // Még nem lett elküldve Telegramra
+            sent: false // Bármit is mentesz, kiküldésre fog várni!
         };
 
-        // Mentés a Firebase-be PUT metódussal (felülírja az adott napit)
         const url = `${FIREBASE_URL}erdekessegek/${datum}.json`;
 
         try {
@@ -72,15 +299,77 @@
             });
 
             if (response.ok) {
-                statusMsg.textContent = "✅ Sikeresen elmentve! A robot ki fogja küldeni a megadott napon.";
-                statusMsg.className = "status success";
-                document.getElementById('szoveg').value = ""; // Töröljük a mezőt
+                mutatStatusz(`✅ Sikeresen elmentve a ${datum} napra!`, "success");
+                urlapUrites();
+                adatokLekerdezese(); // Lista frissítése
             } else {
-                throw new Error("Hiba a mentésnél.");
+                throw new Error("Szerver hiba.");
             }
         } catch (error) {
-            statusMsg.textContent = "❌ Hiba történt: Nincs engedély az írásra a Firebase-ben!";
-            statusMsg.className = "status error";
+            mutatStatusz("❌ Hiba történt: Nincs engedély az írásra a Firebase-ben!", "error");
+        }
+    }
+
+    // 3. SZERKESZTÉS BETÖLTÉSE AZ ŰRLAPBA
+    function szerkesztesBetoltes(datum, encodedSzoveg, elkulve) {
+        document.getElementById('datum').value = datum;
+        document.getElementById('szoveg').value = decodeURIComponent(encodedSzoveg);
+        document.getElementById('isSent').value = elkulve;
+        
+        document.getElementById('formTitle').innerHTML = "✏️ Jelenlegi bejegyzés szerkesztése";
+        document.getElementById('saveBtn').innerHTML = "🔄 Változtatások mentése";
+        document.getElementById('cancelBtn').style.display = "block";
+        
+        mutatStatusz("Felkészítve szerkesztésre. (Mentés után újra kiküldésre váró lesz!)", "");
+        
+        // Felfelé görgetés telefonon
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 4. BEJEGYZÉS TÖRLÉSE
+    async function torlesAdatbazisbol(datum) {
+        const megerosites = confirm(`Biztosan törölni szeretnéd a ${datum} napra beállított érdekességet?`);
+        if (!megerosites) return;
+
+        mutatStatusz("Törlés folyamatban...", "");
+        const url = `${FIREBASE_URL}erdekessegek/${datum}.json`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                mutatStatusz("✅ Bejegyzés sikeresen törölve!", "success");
+                adatokLekerdezese(); // Lista frissítése
+                urlapUrites();
+            } else {
+                throw new Error("Törlési hiba.");
+            }
+        } catch (error) {
+            mutatStatusz("❌ Hiba történt a törlés során!", "error");
+        }
+    }
+
+    // SEGÉDFÜGGVÉNYEK
+    function urlapUrites() {
+        document.getElementById('datum').valueAsDate = new Date();
+        document.getElementById('szoveg').value = "";
+        document.getElementById('isSent').value = "false";
+        
+        document.getElementById('formTitle').innerHTML = "✏️ Új bejegyzés";
+        document.getElementById('saveBtn').innerHTML = "💾 Mentés az adatbázisba";
+        document.getElementById('cancelBtn').style.display = "none";
+    }
+
+    function mutatStatusz(uzenet, tipus) {
+        const element = document.getElementById('statusMsg');
+        element.textContent = uzenet;
+        element.className = `status ${tipus}`;
+        
+        // 5 másodperc múlva eltűnik a hiba/siker üzenet
+        if (tipus !== "") {
+            setTimeout(() => { element.textContent = ""; }, 5000);
         }
     }
 </script>
